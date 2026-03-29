@@ -1,0 +1,161 @@
+/* ═══════════════════════════════════════════════════════════════
+   SPECTRAX — Global Design System (React + TypeScript)
+   Dark theme • Neon accents • Glassmorphism • Futuristic UI
+   ═══════════════════════════════════════════════════════════════ */
+
+/* ── Reset & Base ─────────────────────────────────────────────── */
+*, *::before, *::after {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+:root {
+  /* Background */
+  --bg-primary: #0a0a1a;
+  --bg-secondary: #0d1127;
+  --bg-tertiary: #111633;
+
+  /* Neon Accent Colors */
+  --neon-cyan: #00f0ff;
+  --neon-cyan-dim: #00a8b5;
+  --neon-purple: #a855f7;
+  --neon-purple-dim: #7c3aed;
+  --neon-green: #00ff88;
+  --neon-yellow: #ffd600;
+  --neon-red: #ff3b5c;
+  --neon-orange: #ff7a00;
+
+  /* Glass */
+  --glass-bg: rgba(13, 17, 39, 0.65);
+  --glass-border: rgba(0, 240, 255, 0.15);
+  --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+  --glass-blur: 20px;
+
+  /* Text */
+  --text-primary: #e8ecf4;
+  --text-secondary: rgba(232, 236, 244, 0.7);
+  --text-dim: rgba(232, 236, 244, 0.4);
+
+  /* Fonts */
+  --font-heading: 'Orbitron', sans-serif;
+  --font-body: 'Inter', sans-serif;
+
+  /* Radius */
+  --radius-sm: 8px;
+  --radius-md: 14px;
+  --radius-lg: 22px;
+  --radius-xl: 32px;
+
+  /* Transitions */
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+html, body, #root {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+}
+
+body {
+  font-family: var(--font-body);
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ── UI Framework ─────────────────────────────────────────────── */
+.glass {
+  background: var(--glass-bg);
+  backdrop-filter: blur(var(--glass-blur));
+  -webkit-backdrop-filter: blur(var(--glass-blur));
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-md);
+  box-shadow: var(--glass-shadow);
+}
+
+.btn-neon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 16px 40px;
+  font-family: var(--font-heading);
+  font-size: 0.9rem;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--bg-primary);
+  background: var(--neon-cyan);
+  border: none;
+  border-radius: var(--radius-xl);
+  cursor: pointer;
+  position: relative;
+  transition: all 0.4s var(--ease-out);
+  text-decoration: none;
+}
+
+.btn-neon:disabled {
+  background: #333;
+  color: #666;
+  cursor: not-allowed;
+  opacity: 0.5;
+  box-shadow: none !important;
+}
+
+.btn-neon:not(:disabled):hover {
+  transform: translateY(-3px);
+  box-shadow: 0 0 30px rgba(0, 240, 255, 0.6);
+}
+
+.btn-outline {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 14px 34px;
+  font-family: var(--font-heading);
+  font-size: 0.85rem;
+  font-weight: 600;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--neon-cyan);
+  background: transparent;
+  border: 1.5px solid rgba(0, 240, 255, 0.4);
+  border-radius: var(--radius-xl);
+  cursor: pointer;
+  transition: all 0.35s var(--ease-out);
+  text-decoration: none;
+}
+
+.btn-outline:hover {
+  background: rgba(0, 240, 255, 0.1);
+  border-color: var(--neon-cyan);
+}
+
+/* ── Animations ──────────────────────────────────────────────── */
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(30px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-in {
+  animation: fadeInUp 0.8s var(--ease-out) both;
+}
+
+/* ── Screen Container ─────────────────────────────────────────── */
+.screen-container {
+  width: 100vw;
+  height: 100vh;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ── Typography Glow ──────────────────────────────────────────── */
+.text-glow {
+  text-shadow: 0 0 20px rgba(0, 240, 255, 0.7);
+}
