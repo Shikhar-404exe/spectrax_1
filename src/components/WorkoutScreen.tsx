@@ -68,6 +68,7 @@ export const WorkoutScreen: React.FC<WorkoutScreenProps> = ({ exercise, onEnd, o
   const frameId = useRef<number>(0);
   const lastProcessTime = useRef<number>(0);
   const countRef = useRef<number>(0);
+  const startTimeRef = useRef<number>(Date.now());
   const frameSkipRef = useRef<number>(0);          // frame-skip counter
   const workerRef = useRef<Worker | null>(null);    // pose worker
   const pendingLandmarksRef = useRef<any>(null);    // latest landmarks for worker
@@ -103,6 +104,8 @@ export const WorkoutScreen: React.FC<WorkoutScreenProps> = ({ exercise, onEnd, o
 
   useEffect(() => {
     let isMounted = true;
+
+      startTimeRef.current = Date.now();
 
     // ── Spawn Web Worker ──────────────────────────────────────────────────────
     const worker = createPoseWorker();
@@ -267,7 +270,11 @@ export const WorkoutScreen: React.FC<WorkoutScreenProps> = ({ exercise, onEnd, o
     startWorkout();
 
     const timer = setInterval(() => {
-      setSeconds(s => s + 1);
+      const elapsed = Math.floor(
+        (Date.now() - startTimeRef.current) / 1000
+      );
+      
+      setSeconds(elapsed);
     }, 1000);
 
     return () => {
