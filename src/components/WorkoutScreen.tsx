@@ -31,6 +31,7 @@ import { skeletalSense } from '../services/skeletalSense'; // Kept on main threa
 import { poseLockService } from '../services/poseLockService';
 import { clipEngine } from '../services/clipEngine';
 import { BodyType } from '../services/bodyTypeEngine';
+import { FocusPanel, TimerPanel, RepsPanel, EnginePanel, SensePanel } from './WorkoutPanels';
 
 // ── Web Worker (Vite native worker bundling) ──────────────────────────────────
 const createPoseWorker = () =>
@@ -718,54 +719,11 @@ export const WorkoutScreen: React.FC<WorkoutScreenProps> = ({ exercise, onEnd, o
       </div>
 
       <div className="workout-panel-layer">
-        {renderDraggablePanel('focus', '', (
-          <div className="glass workout-stat-card workout-focus-panel animate-in">
-            <div style={{ fontSize: '0.65rem', color: 'var(--text-dim)', letterSpacing: '2px', textTransform: 'uppercase', marginBottom: '4px' }}>Session Focus</div>
-            <div style={{ fontFamily: 'var(--font-heading)', color: 'var(--neon-cyan)', fontSize: '1.2rem' }}>{exercise.name.toUpperCase()}</div>
-          </div>
-        ))}
-
-        {renderDraggablePanel('timer', '', (
-          <div className="glass workout-stat-card workout-timer-panel animate-in">
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', justifyContent: 'flex-end', marginBottom: '4px' }}>
-              <span style={{ fontSize: '0.65rem', color: 'var(--text-dim)', letterSpacing: '2px', textTransform: 'uppercase' }}>Time</span>
-            </div>
-            <div style={{ fontFamily: 'var(--font-heading)', color: '#fff', fontSize: '1.5rem' }}>{formatTime(seconds)}</div>
-          </div>
-        ))}
-
-        {renderDraggablePanel('reps', '', (
-          <div className="rep-counter workout-reps-panel animate-in" style={{ textAlign: 'center' }}>
-            <div style={{ fontFamily: 'var(--font-heading)', fontSize: '7rem', fontWeight: 900, lineHeight: 1, color: '#fff', textShadow: `0 0 40px ${statusColor}44` }}>{engineState.reps}</div>
-            <div style={{ fontSize: '0.75rem', color: 'var(--text-dim)', letterSpacing: '4px', textTransform: 'uppercase' }}>Repetitions</div>
-          </div>
-        ))}
-
-        {renderDraggablePanel('engine', '', (
-          <div className="glass workout-stat-card animate-in" style={{ borderLeft: `3px solid ${statusColor}` }}>
-            <div style={{ fontSize: '0.75rem', color: statusColor, display: 'flex', alignItems: 'center', gap: '8px', fontWeight: 700 }}>
-              <Activity size={14} /> AI ENGINE: {engineState.status === 'green' ? 'STABLE' : 'CORRECTION REQUIRED'}
-            </div>
-          </div>
-        ))}
-
-        {renderDraggablePanel('sense', '', (
-          clipEngine.isReady() || clipEngine.getMode() === 'cloud' ? (
-            <div className="glass workout-stat-card workout-sense-panel animate-in">
-              <div className="radar-ping" style={{ width: '8px', height: '8px', background: '#9D4EDD', borderRadius: '50%' }}></div>
-              <div style={{ fontSize: '0.75rem', color: '#9D4EDD', fontWeight: 700 }}>
-                VLM SENSE: {clipEngine.getMode() === 'cloud' ? (clipResult ? `CLOUD: ${clipResult.label.toUpperCase()}` : 'CLOUD ACTIVATING...') : (clipResult ? clipResult.label.toUpperCase() : 'SCANNING...')} ({clipResult ? Math.round(clipResult.confidence * 100) : 0}%)
-              </div>
-            </div>
-          ) : (
-            <div className="glass workout-stat-card animate-in" style={{ borderLeft: '3px solid var(--neon-cyan)' }}>
-              <div style={{ fontSize: '0.75rem', color: 'var(--neon-cyan)', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <div className="radar-ping loading" style={{ width: '8px', height: '8px', background: 'var(--neon-cyan)', borderRadius: '50%' }}></div>
-                OFFLINE AI SENSE: READY
-              </div>
-            </div>
-          )
-        ))}
+        {renderDraggablePanel('focus', '', <FocusPanel exerciseName={exercise.name} />)}
+        {renderDraggablePanel('timer', '', <TimerPanel seconds={seconds} />)}
+        {renderDraggablePanel('reps', '', <RepsPanel reps={engineState.reps} statusColor={statusColor} />)}
+        {renderDraggablePanel('engine', '', <EnginePanel status={engineState.status} statusColor={statusColor} />)}
+        {renderDraggablePanel('sense', '', <SensePanel clipEngine={clipEngine} clipResult={clipResult} />)}
       </div>
 
       {/* MID-SET MISMATCH ALERT */}
