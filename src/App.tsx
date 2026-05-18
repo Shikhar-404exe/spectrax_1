@@ -8,6 +8,7 @@ import { exercises, ExerciseConfig } from './config/exercises';
 import { BodyType } from './services/bodyTypeEngine';
 import { useTheme } from './context/ThemeContext';
 import HistoryPage from "./HistoryPage";
+import { useLeveling } from './hooks/useLeveling';
 
 type Screen = 'welcome' | 'calibration' | 'workout' | 'summary' | 'replay' | 'history';
 
@@ -22,6 +23,7 @@ interface WorkoutStats {
   mistakes: Record<string, number>;
   bestStreak: number;
   tags?: string[];
+  gainedXp?: number;
 }
 
 function App() {
@@ -41,13 +43,15 @@ function App() {
     bestStreak: 0
   });
   const lastSwitchTime = useRef<number>(0);
+  const leveling = useLeveling();
 
   const navigateTo = (screen: Screen) => {
     setCurrentScreen(screen);
   };
 
   const handleWorkoutEnd = (finalStats: Omit<WorkoutStats, 'exerciseName'> & { tags?: string[] }) => {
-    setStats({ ...finalStats, exerciseName: selectedExercise.name });
+    const gainedXp = leveling.addXpFromReps(finalStats.reps);
+    setStats({ ...finalStats, exerciseName: selectedExercise.name, gainedXp });
     navigateTo('summary');
   };
 
@@ -84,7 +88,8 @@ function App() {
       {currentScreen === 'welcome' && (
       <WelcomeScreen
         onStart={() => navigateTo('calibration')}
-        onViewHistory={() => navigateTo('history')}  // add this
+        onViewHistory={() => navigateTo('history')}
+        leveling={leveling}
        />
       )}
       
@@ -110,6 +115,7 @@ function App() {
       {currentScreen === 'summary' && (
         <SummaryScreen 
           stats={stats}
+          leveling={leveling}
           onRestart={() => navigateTo('welcome')} 
           onViewReplay={() => navigateTo('replay')} 
         />
