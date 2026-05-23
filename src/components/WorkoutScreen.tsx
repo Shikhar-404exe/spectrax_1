@@ -121,6 +121,18 @@ const getStoredPanelPositions = (): PanelPositions => {
   }
 };
 
+const srOnly: React.CSSProperties = {
+  position: 'absolute',
+  width: '1px',
+  height: '1px',
+  padding: '0',
+  margin: '-1px',
+  overflow: 'hidden',
+  clip: 'rect(0, 0, 0, 0)',
+  whiteSpace: 'nowrap',
+  border: '0',
+};
+
 export const WorkoutScreen: React.FC<WorkoutScreenProps> = ({
   exercise,
   onEnd,
@@ -1169,7 +1181,6 @@ export const WorkoutScreen: React.FC<WorkoutScreenProps> = ({
           75% { transform: translateX(-48%); }
         }
       `}</style>
-    </div>
     </div>
   );
 };
