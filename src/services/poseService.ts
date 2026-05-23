@@ -15,7 +15,7 @@ type LandmarkCoordinate = 'x' | 'y' | 'z';
 type LandmarkStream = 'poseLandmarks' | 'poseWorldLandmarks';
 
 export type PoseSmoothingFilterType = 'kalman' | 'ema';
-type NormalizedLandmarkList = Array<{ x: number; y: number; z: number; visibility: number }>;
+type NormalizedLandmarkList = import('@mediapipe/pose').NormalizedLandmarkList;
 
 export interface KalmanFilterOptions {
   type: 'kalman';

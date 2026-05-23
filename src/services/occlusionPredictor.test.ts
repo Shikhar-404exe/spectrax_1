@@ -4,7 +4,7 @@ function makeLandmark(x: number, y: number, z: number, visibility: number): Land
   return { x, y, z, visibility };
 }
 
-function fullBody(overrides?: Partial<Landmark>[]): Landmark[] {
+function fullBody(overrides?: Partial<Record<number, Partial<Landmark>>>): Landmark[] {
   const defaultLm = (i: number): Landmark => {
     const isLeft = [11, 13, 15, 17, 19, 21, 23, 25, 27, 29, 31].includes(i);
     const side = isLeft ? -0.1 : 0.1;
@@ -17,7 +17,8 @@ function fullBody(overrides?: Partial<Landmark>[]): Landmark[] {
   };
   const lms: Landmark[] = [];
   for (let i = 0; i < 33; i++) {
-    lms.push(overrides?.[i] ?? defaultLm(i));
+    const override = overrides?.[i];
+    lms.push(override ? { ...defaultLm(i), ...override } : defaultLm(i));
   }
   return lms;
 }

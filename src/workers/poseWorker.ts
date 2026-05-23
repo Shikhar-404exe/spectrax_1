@@ -168,7 +168,7 @@ self.onmessage = (event: MessageEvent) => {
 
   if (!landmarks || landmarks.length === 0) {
     const msg: any = { frameId, angles: {}, detectedExercise: 'unknown', confidence: 0 };
-    if (buf) { msg.buf = buf; (self as any).postMessage(msg, [buf]); }
+    if (buf) { (self as any).postMessage(msg, [buf]); }
     else { (self as any).postMessage(msg); }
     return;
   }
