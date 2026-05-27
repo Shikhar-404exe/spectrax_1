@@ -1,10 +1,3 @@
-import { ExerciseConfig } from "../config/exercises";
-import {
-  getFeedback,
-  resetFeedbackEngine,
-  FeedbackResult,
-} from "../engine/feedbackEngine";
-import { BodyType } from "./bodyTypeEngine";
 import { getSupinationScore } from "./wristRotationDetector";
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -13,15 +6,6 @@ import { getSupinationScore } from "./wristRotationDetector";
 
 /**
  * exerciseEngine.ts  (updated — squat depth classification integrated)
- *
- * Changes vs. original:
- *  1. EngineState gains `lastDepthResult`, `depthStats`, and `liveDepthFeedback`.
- *  2. After a rep is counted, `classifySquatDepth()` runs on `downAngleReached`
- *     and the result is stored + merged into session stats.
- *  3. During the DOWN phase, `getLiveDepthFeedback()` overlays a depth cue
- *     when no higher-priority form issue is active.
- *  4. The depth `scoreModifier` adjusts `minScoreInRep` so half-squats can
- *     fall below the 70-point threshold and be rejected by the accuracy system.
  */
 
 import { ExerciseConfig } from '../config/exercises';
@@ -200,6 +184,25 @@ export interface EngineState {
   holdTime?: number;
 
   wristSupinationScore?: number;
+
+  /** Real-time depth coaching string emitted during the DOWN phase. */
+  liveDepthFeedback: string;
+
+  // VBT Metrics
+  vbtMetrics?: VBTMetrics;
+
+  // Pushup depth classification
+  lastPushupDepthResult?: PushupDepthResult | null;
+  pushupDepthStats?: PushupDepthStats;
+  livePushupDepthFeedback?: string;
+  downZReached?: number;
+
+  // Tracking & recovery buffers
+  visibilityBuffer?: number[];
+  trackingLostFrames?: number;
+  lastValidAngles?: Record<string, number>;
+  jumpingJackSyncSamples?: JumpingJackSyncSample[];
+  jumpingJackSync?: JumpingJackSyncMetrics;
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -213,30 +216,6 @@ interface RepParams {
   minDownDuration: number;
   correctRepMinScore: number;
   streakMinScore: number;
-}
-
-  /**
-   * Real-time depth coaching string emitted during the DOWN phase.
-   * Empty string when no depth cue is active.
-   */
-  liveDepthFeedback: string;
-
-  // VBT Metrics
-  vbtMetrics?: VBTMetrics;
-
-  // ── Pushup depth classification (NEW) ──────────────────────────
-  lastPushupDepthResult?: PushupDepthResult | null;
-  pushupDepthStats?: PushupDepthStats;
-  livePushupDepthFeedback?: string;
-  downZReached?: number;
-
-  // Tracking & recovery buffers
-  visibilityBuffer?: number[];
-  trackingLostFrames?: number;
-  lastValidAngles?: Record<string, number>;
-  holdTime?: number;
-  jumpingJackSyncSamples?: JumpingJackSyncSample[];
-  jumpingJackSync?: JumpingJackSyncMetrics;
 }
 
 // ─────────────────────────────────────────────
