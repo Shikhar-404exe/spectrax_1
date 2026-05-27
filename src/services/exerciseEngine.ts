@@ -2,6 +2,15 @@ import { getSupinationScore } from "./wristRotationDetector";
 
 /**
  * exerciseEngine.ts  (updated — squat depth classification integrated)
+ *
+ * Changes vs. original:
+ *  1. EngineState gains `lastDepthResult`, `depthStats`, and `liveDepthFeedback`.
+ *  2. After a rep is counted, `classifySquatDepth()` runs on `downAngleReached`
+ *     and the result is stored + merged into session stats.
+ *  3. During the DOWN phase, `getLiveDepthFeedback()` overlays a depth cue
+ *     when no higher-priority form issue is active.
+ *  4. The depth `scoreModifier` adjusts `minScoreInRep` so half-squats can
+ *     fall below the 70-point threshold and be rejected by the accuracy system.
  */
 
 import { ExerciseConfig } from '../config/exercises';
@@ -175,20 +184,23 @@ export interface EngineState {
    * null until the first rep is counted.
    */
   lastDepthResult: SquatDepthResult | null;
-  depthStats: SquatDepthStats;
+  depthStats?: SquatDepthStats;
 
   // 🔥 Static hold time tracking
   holdTime?: number;
 
   wristSupinationScore?: number;
 
-  /** Real-time depth coaching string emitted during the DOWN phase. */
+  /**
+   * Real-time depth coaching string emitted during the DOWN phase.
+   * Empty string when no depth cue is active.
+   */
   liveDepthFeedback: string;
 
   // VBT Metrics
   vbtMetrics?: VBTMetrics;
 
-  // Pushup depth classification
+  // ── Pushup depth classification (NEW) ──────────────────────────
   lastPushupDepthResult?: PushupDepthResult | null;
   pushupDepthStats?: PushupDepthStats;
   livePushupDepthFeedback?: string;
@@ -226,7 +238,7 @@ const ENGINE_DEFAULTS: RepParams = {
   smoothingWindow: 5,
   minDownDuration: 150,
   correctRepMinScore: 70,
-  streakMinScore: 80,
+  streakMinScore: 85,
 };
 
 const layoutOverrides = new Map<string, Partial<RepParams>>();
@@ -236,9 +248,9 @@ export class ExerciseEngine {
 
   private readonly BASE_HYSTERESIS = 10;
   private readonly SMOOTHING_WINDOW = 5;
-  private readonly MIN_DOWN_DURATION = 150;
-  private kinematicEngine = new KinematicEngine();
 
+  private kinematicEngine = new KinematicEngine();
+  private readonly MIN_DOWN_DURATION = 150;
 
   private repParams(key: string): RepParams {
     return {
@@ -299,7 +311,7 @@ export class ExerciseEngine {
       const primaryJointIndex = jointMap[config.key] ?? 24;
       updatedVbtMetrics = this.kinematicEngine.update(
         landmarks,
-        now,
+        Date.now(),
         primaryJointIndex
       );
     }
@@ -308,7 +320,7 @@ export class ExerciseEngine {
     // Adaptive Difficulty Tuning
     let currentCooldown = this.BASE_REP_COOLDOWN;
     let currentHysteresis = this.BASE_HYSTERESIS;
-
+    
     if (bodyType === 'ecto') {
       currentCooldown = 750; // Longer limbs take more time to complete full ROM
       currentHysteresis = 12; // Ectos need slightly larger movement bands
@@ -456,20 +468,7 @@ export class ExerciseEngine {
       // Usually we want total hold time. We'll keep accumulating.
     }
 
-    let hipSplineDeviation = 0;
-    const nextPlankSpline = { isCalibrated: true };
-    const PLANK_DEVIATION_THRESHOLD = 0.08;
-
-    if (landmarks && landmarks.length >= 33) {
-      const s = landmarks[11];
-      const h = landmarks[23];
-      const a = landmarks[27];
-      if (s && h && a && Math.abs(a.x - s.x) > 0.1) {
-        const expectedY = s.y + (a.y - s.y) * ((h.x - s.x) / (a.x - s.x));
-        hipSplineDeviation = h.y - expectedY;
-      }
-    }
-
+    // ───────── WRIST ROTATION DETECTION ─────────
     const wristSupinationScore = config.key === 'bicepCurl'
       ? getSupinationScore(landmarks)
       : NaN;
@@ -738,9 +737,6 @@ export class ExerciseEngine {
       lastDepthResult: nextLastDepthResult,
       depthStats: nextDepthStats,
       liveDepthFeedback,
-
-      jumpingJackSyncSamples: nextJumpingJackSyncSamples,
-      jumpingJackSync: nextJumpingJackSync,
 
       vbtMetrics: updatedVbtMetrics,
 

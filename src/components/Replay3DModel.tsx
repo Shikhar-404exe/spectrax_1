@@ -739,7 +739,7 @@ export const Replay3DModel: React.FC<Replay3DModelProps> = ({
     });
     const createdJoints: THREE.Mesh[] = [];
     for (let i = 0; i < 33; i++) {
-      const sphere = new THREE.Mesh(jointGeometry, jointMaterial.clone());
+      const sphere = new THREE.Mesh(jointGeometry, jointShaderMaterial.clone());
       sphere.castShadow = true;
       sphere.receiveShadow = true;
       scene.add(sphere);
@@ -999,7 +999,7 @@ export const Replay3DModel: React.FC<Replay3DModelProps> = ({
 
       jointsRef.current.forEach((mesh) => {
         mesh.geometry.dispose();
-        (mesh.material as THREE.MeshStandardMaterial).dispose();
+        (mesh.material as THREE.ShaderMaterial).dispose();
       });
       jointsRef.current = [];
       bonesRef.current.forEach(({ line }) => {
