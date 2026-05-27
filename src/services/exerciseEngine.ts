@@ -6,7 +6,6 @@ import { getSupinationScore } from "./wristRotationDetector";
 
 import { ExerciseConfig } from '../config/exercises';
 import { getFeedback, resetFeedbackEngine, FeedbackResult } from '../engine/feedbackEngine';
-import { getSupinationScore } from "./wristRotationDetector";
 // Note: feedbackEngine.ts lives in src/engine/ — path is correct relative to src/services/
 import {
   classifySquatDepth,
@@ -475,10 +474,6 @@ export class ExerciseEngine {
       ? getSupinationScore(landmarks)
       : NaN;
 
-    const PLANK_DEVIATION_THRESHOLD = 15;
-    const nextPlankSpline = { isCalibrated: false };
-    const hipSplineDeviation = 0;
-
     const context: any = {
       ...angles,
       stage: nextStage,
@@ -762,9 +757,6 @@ export class ExerciseEngine {
       visibilityBuffer: newVisibilityBuffer,
       trackingLostFrames: nextTrackingLostFrames,
       lastValidAngles: nextLastValidAngles,
-
-      jumpingJackSyncSamples: nextJumpingJackSyncSamples,
-      jumpingJackSync: nextJumpingJackSync,
     };
   }
 }

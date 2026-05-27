@@ -7,6 +7,8 @@ import { ExerciseConfig, exercises } from '../config/exercises';
 import { bodyTypeEngine, BodyType, BodyTypeResult } from '../services/bodyTypeEngine';
 import { gestureService, GestureResult } from '../services/gestureService';
 import { useWorkoutHistory } from '../useWorkoutHistory';
+import { cameraService } from '../services/cameraService';
+import { poseService } from '../services/poseService';
 
 interface CalibrationScreenProps {
   selectedExercise: ExerciseConfig;
@@ -73,6 +75,7 @@ export const CalibrationScreen: React.FC<CalibrationScreenProps> = ({
   const lastProcessTime = useRef<number>(0);
   const FPS_LIMIT = 15;
   const countdownIntervalRef = useRef<any>(null);
+  const lastLandmarksRef = useRef<any>(null);
 
   const handleResults = useCallback((results: any) => {
     const evaluation = calibrationLogic.evaluate(results);
@@ -107,6 +110,20 @@ export const CalibrationScreen: React.FC<CalibrationScreenProps> = ({
       setError(msg);
     }
     setResult(prev => ({ ...prev, status: 'red', message: 'Sync failed' }));
+  };
+
+  const isStationary = (prev: any, curr: any) => {
+    if (!prev || !curr) return false;
+    const threshold = 0.005;
+    for (let i = 0; i < Math.min(prev.length, curr.length); i++) {
+      if (
+        Math.abs((prev[i]?.x || 0) - (curr[i]?.x || 0)) > threshold ||
+        Math.abs((prev[i]?.y || 0) - (curr[i]?.y || 0)) > threshold
+      ) {
+        return false;
+      }
+    }
+    return true;
   };
 
   const {

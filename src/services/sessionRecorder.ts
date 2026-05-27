@@ -22,6 +22,35 @@ export interface TelemetryEvent {
   data?: any;
 }
 
+type LandmarkCoordinate = "x" | "y" | "z" | "visibility";
+
+export interface CompressedLandmarkDelta {
+  index: number;
+  values: Partial<Record<LandmarkCoordinate, number>>;
+}
+
+export interface CompressedFrameChunk {
+  kind: "base" | "delta";
+  timestamp: number;
+  timestampDelta: number;
+  runLength: number;
+  exercise?: string;
+  feedback?: string;
+  angles?: Record<string, number>;
+  landmarks?: unknown[] | CompressedLandmarkDelta[];
+}
+
+export interface SessionArchive {
+  codec: "rld-delta-v1";
+  frameCount: number;
+  generatedAt: number;
+  frames: CompressedFrameChunk[];
+}
+
+const ANGLE_THRESHOLD = 2.0;
+const LANDMARK_THRESHOLD = 0.002;
+const FLOAT_PRECISION = 4;
+
 // ─────────────────────────────────────────────────────────────────────────────
 // RLD Compression Driver
 // ─────────────────────────────────────────────────────────────────────────────
@@ -41,12 +70,7 @@ export class RLDCompressionDriver {
         compressed[compressed.length - 1].timestampDelta =
           currFrame.timestamp - previousFrame.timestamp;
       } else {
-        compressed.push({
-          ...currFrame,
-          timestampDelta: currFrame.timestamp - prevFrame.timestamp,
-          runLength: 1,
-        });
-        prevFrame = currFrame;
+        compressed.push(this.createChunk(previousFrame, currFrame));
       }
       previousFrame = currFrame;
     }
@@ -428,6 +452,7 @@ class SessionRecorder {
     } else {
       this.compressedFrames.push({
         ...frame,
+        kind: "base",
         timestampDelta: this.lastRawFrame ? frame.timestamp - this.lastRawFrame.timestamp : 33,
         runLength: 1,
       });

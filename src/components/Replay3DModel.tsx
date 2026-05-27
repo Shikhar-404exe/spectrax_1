@@ -610,6 +610,7 @@ export const Replay3DModel: React.FC<Replay3DModelProps> = ({
   const [modelLoaded, setModelLoaded] = useState(false);
   const [modelLoading, setModelLoading] = useState(false);
   const [modelError, setModelError] = useState<string | null>(null);
+  const [showAxes, setShowAxes] = useState(false);
 
   // ─ Graphic state ─
   const [graphicsPreset, setGraphicsPreset] = useState<GraphicsPreset>("high");
@@ -627,34 +628,6 @@ export const Replay3DModel: React.FC<Replay3DModelProps> = ({
     autoAdaptRef.current = autoAdapt;
   }, [autoAdapt]);
 
-  syncRippleUniforms(timeSeconds);
-
-  if (lastRepCountRef.current === null) {
-    lastRepCountRef.current = repCount;
-  } else if (repCount !== lastRepCountRef.current) {
-    if (repCount > lastRepCountRef.current && footCenter) {
-      const lastCompletion = lastRippleCompletionTimeRef.current;
-      const intervalSeconds = lastCompletion
-        ? timeSeconds - lastCompletion
-        : 1.0;
-      const tempo = THREE.MathUtils.clamp(
-        1.8 / Math.max(intervalSeconds, 0.25),
-        0.7,
-        1.6,
-      );
-      const rippleOrigin = new THREE.Vector2(
-        THREE.MathUtils.clamp(footCenter.x / GRID_SIZE + 0.5, 0.05, 0.95),
-        THREE.MathUtils.clamp(footCenter.y / GRID_SIZE + 0.5, 0.05, 0.95),
-      );
-      emitRipple(
-        rippleOrigin,
-        0.5 + tempo * 0.55,
-        0.65 + tempo * 0.35,
-        timeSeconds,
-      );
-    }
-    lastRepCountRef.current = repCount;
-  }
   const isPlaying =
     externalIsPlaying !== undefined ? externalIsPlaying : _isPlaying;
   const currentFrameIdx =
@@ -671,7 +644,7 @@ export const Replay3DModel: React.FC<Replay3DModelProps> = ({
   const bloomPassRef = useRef<UnrealBloomPass | null>(null);
   const smaaPassRef = useRef<SMAAPass | null>(null);
   const ssaoPassRef = useRef<SSAOPass | null>(null);
-  const cameraRef = useRef<THREE.PerspectiveCamera | null>(null);
+  const cameraRef = useRef<THREE.PerspectiveCamera | THREE.OrthographicCamera | null>(null);
   const controlsRef = useRef<OrbitControls | null>(null);
 
   // Fallback skeleton refs
@@ -679,6 +652,7 @@ export const Replay3DModel: React.FC<Replay3DModelProps> = ({
   const bonesRef = useRef<
     { line: THREE.Line; startIdx: number; endIdx: number }[]
   >([]);
+  const axesRef = useRef<THREE.AxesHelper[]>([]);
 
   // GLTF refs
   const modelGroupRef = useRef<THREE.Group | null>(null);
@@ -1068,12 +1042,6 @@ export const Replay3DModel: React.FC<Replay3DModelProps> = ({
     }
     axesRef.current = createdAxes;
 
-    const createdBones: { mesh: THREE.Mesh; startIdx: number; endIdx: number }[] = [];
-    const boneRadius = 0.015;
-    const boneGeometry = new THREE.CylinderGeometry(boneRadius, boneRadius, 1, 8);
-    boneGeometry.rotateX(Math.PI / 2);
-    boneGeometry.translate(0, 0, 0.5);
-
     const createdBones: {
       line: THREE.Line;
       startIdx: number;
@@ -1195,7 +1163,7 @@ export const Replay3DModel: React.FC<Replay3DModelProps> = ({
       setModelLoaded(true);
       setModelLoading(false);
       jointsRef.current.forEach((j) => (j.visible = false));
-      bonesRef.current.forEach((b) => (b.mesh.visible = false));
+      bonesRef.current.forEach((b) => (b.line.visible = false));
     };
 
     // Check cache first
@@ -1409,9 +1377,9 @@ export const Replay3DModel: React.FC<Replay3DModelProps> = ({
         (mesh.material as THREE.MeshStandardMaterial).dispose();
       });
       jointsRef.current = [];
-      bonesRef.current.forEach(({ mesh }) => {
-        mesh.geometry.dispose();
-        (mesh.material as THREE.MeshStandardMaterial).dispose();
+      bonesRef.current.forEach(({ line }) => {
+        line.geometry.dispose();
+        (line.material as THREE.LineBasicMaterial).dispose();
       });
       bonesRef.current = [];
 
@@ -1564,6 +1532,35 @@ export const Replay3DModel: React.FC<Replay3DModelProps> = ({
             : rAnkle
               ? new THREE.Vector2(rAnkle.x, rAnkle.z)
               : null;
+
+      syncRippleUniforms(timeSeconds);
+
+      if (lastRepCountRef.current === null) {
+        lastRepCountRef.current = repCount;
+      } else if (repCount !== lastRepCountRef.current) {
+        if (repCount > lastRepCountRef.current && footCenter) {
+          const lastCompletion = lastRippleCompletionTimeRef.current;
+          const intervalSeconds = lastCompletion
+            ? timeSeconds - lastCompletion
+            : 1.0;
+          const tempo = THREE.MathUtils.clamp(
+            1.8 / Math.max(intervalSeconds, 0.25),
+            0.7,
+            1.6,
+          );
+          const rippleOrigin = new THREE.Vector2(
+            THREE.MathUtils.clamp(footCenter.x / GRID_SIZE + 0.5, 0.05, 0.95),
+            THREE.MathUtils.clamp(footCenter.y / GRID_SIZE + 0.5, 0.05, 0.95),
+          );
+          emitRipple(
+            rippleOrigin,
+            0.5 + tempo * 0.55,
+            0.65 + tempo * 0.35,
+            timeSeconds,
+          );
+        }
+        lastRepCountRef.current = repCount;
+      }
 
       if (modelLoaded) {
         if (!modelGroupRef.current) return;

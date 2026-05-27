@@ -183,44 +183,21 @@ useEffect(() => {
   const [vlmProgress, setVlmProgress] = useState(0);
   const [clipResult, setClipResult] = useState<any>(null);
   const { isOnline } = useWorkoutSync();
- fix-workout-screen-memory-leaks
-  
-  const [cameraError, setCameraError] = useState<string | null>(null);
-  const [showExitModal, setShowExitModal] = useState(false);
-
-  const [gestureConfidences, setGestureConfidences] = useState<Record<string, number>>({});
-  const [lastGestureCommand, setLastGestureCommand] = useState<string | null>(null);
-  const [gestureHudVisible, setGestureHudVisible] = useState(false);
-  const gestureHudTimerRef = useRef<number | NodeJS.Timeout | null>(null);
-  const workoutControlRef = useRef<any>(null);
-  const [workoutControlState, setWorkoutControlState] = useState<any>(null);
-  const ghostFramesRef = useRef<any[]>([]);
-  const ghostStatsRef = useRef<any>(null);
-  const [hasGhost, setHasGhost] = useState(false);
-
-  const [gestureConfidences, setGestureConfidences] = useState<Record<string, number>>({});
-  const [lastGestureCommand, setLastGestureCommand] = useState<string | null>(null);
-  const [gestureHudVisible, setGestureHudVisible] = useState(false);
-  const gestureHudTimerRef = useRef<number | NodeJS.Timeout | null>(null);
-  const workoutControlRef = useRef<any>(null);
-  const [workoutControlState, setWorkoutControlState] = useState<any>(null);
-  const ghostFramesRef = useRef<any[]>([]);
-  const ghostStatsRef = useRef<any>(null);
-  const [hasGhost, setHasGhost] = useState(false);
-
-  // ── Gestures & Controls (lost in merge) ──
-  const [gestureConfidences, setGestureConfidences] = useState<Record<string, number>>({});
-  const [lastGestureCommand, setLastGestureCommand] = useState<string | null>(null);
-  const [gestureHudVisible, setGestureHudVisible] = useState(false);
-  const gestureHudTimerRef = useRef<NodeJS.Timeout | null>(null);
-
-  const workoutControlRef = useRef<any>(null);
-  const [workoutControlState, setWorkoutControlState] = useState<any>(null);
-
-  // ── Ghost Mode (lost in merge) ──
-  const ghostFramesRef = useRef<any[]>([]);
-  const ghostStatsRef = useRef<any>(null);
-  const [hasGhost, setHasGhost] = useState(false);
+  const throttleLevel = useThrottleLevel();
+  const bodyTypeRef = useRef(bodyType);
+  const onAutoDetectRef = useRef(onAutoDetect);
+  const isMountedRef = useRef(true);
+  const srOnly: React.CSSProperties = {
+    position: 'absolute',
+    width: '1px',
+    height: '1px',
+    padding: 0,
+    margin: '-1px',
+    overflow: 'hidden',
+    clip: 'rect(0, 0, 0, 0)',
+    whiteSpace: 'nowrap',
+    borderWidth: 0,
+  };
 
   const [engineState, setEngineState] = useState<EngineState>({
     reps: 0,
@@ -257,8 +234,8 @@ useEffect(() => {
   const frameSkipRef = useRef<number>(0); // frame-skip counter
   const workerRef = useRef<Worker | null>(null); // pose worker
   const pendingLandmarksRef = useRef<any>(null); // latest landmarks for worker
-  const lastObservedLandmarksRef = useRef<PoseLandmark[] | null>(null);
-  const previousObservedLandmarksRef = useRef<PoseLandmark[] | null>(null);
+  const lastObservedLandmarksRef = useRef<any[] | null>(null);
+  const previousObservedLandmarksRef = useRef<any[] | null>(null);
   const dropoutFrameCountRef = useRef(0);
   const [mismatchError, setMismatchError] = useState<string | null>(null);
   const animationFrameRef = useRef<number | null>(null);
@@ -271,15 +248,6 @@ useEffect(() => {
   const [workoutControlState, setWorkoutControlState] = useState<'idle' | 'running' | 'paused'>('idle');
   const ghostFramesRef = useRef<FrameData[]>([]);
   const ghostStatsRef = useRef<GhostStats | null>(null);
-  const [hasGhost, setHasGhost] = useState(false);
-
-  // Workout control state
-  const workoutControlRef = useRef<'idle' | 'running' | 'paused'>('idle');
-  const [workoutControlState, setWorkoutControlState] = useState<'idle' | 'running' | 'paused'>('idle');
-
-  // Ghost data state
-  const ghostFramesRef = useRef<FrameData[]>([]);
-  const ghostStatsRef = useRef<any>(null);
   const [hasGhost, setHasGhost] = useState(false);
 
   const clampPanelPositions = (positions: PanelPositions) => {
