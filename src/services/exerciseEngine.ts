@@ -1,9 +1,5 @@
 import { getSupinationScore } from "./wristRotationDetector";
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Plank Spline Types & Constants
-// ─────────────────────────────────────────────────────────────────────────────
-
 /**
  * exerciseEngine.ts  (updated — squat depth classification integrated)
  */
@@ -179,6 +175,7 @@ export interface EngineState {
    * null until the first rep is counted.
    */
   lastDepthResult: SquatDepthResult | null;
+  depthStats: SquatDepthStats;
 
   // 🔥 Static hold time tracking
   holdTime?: number;
@@ -224,13 +221,6 @@ interface RepParams {
 
 export class ExerciseEngine {
   private readonly BASE_REP_COOLDOWN = 600;
-
-  private repParams(key: string): RepParams {
-    return {
-      ...ENGINE_DEFAULTS,
-      ...(layoutOverrides.get(key) || {}),
-    };
-  }
   private readonly BASE_HYSTERESIS = 10;
   private readonly SMOOTHING_WINDOW = 5;
 
@@ -239,8 +229,12 @@ export class ExerciseEngine {
 
   private repParams(key: string): RepParams {
     return {
-      ...ENGINE_DEFAULTS,
-      ...(layoutOverrides.get(key) || {}),
+      repCooldown: this.BASE_REP_COOLDOWN,
+      hysteresis: this.BASE_HYSTERESIS,
+      smoothingWindow: this.SMOOTHING_WINDOW,
+      minDownDuration: this.MIN_DOWN_DURATION,
+      correctRepMinScore: 70,
+      streakMinScore: 80,
     };
   }
 
@@ -280,7 +274,7 @@ export class ExerciseEngine {
 
     // ───────── KINEMATICS ENGINE ─────────
     let updatedVbtMetrics = currentState.vbtMetrics;
-    if (landmarks && timestamp !== undefined) {
+    if (landmarks && now !== undefined) {
       const jointMap: Record<string, number> = {
         squat: 24, // Right Hip
         pushup: 11, // Left Shoulder
@@ -292,7 +286,7 @@ export class ExerciseEngine {
       const primaryJointIndex = jointMap[config.key] ?? 24;
       updatedVbtMetrics = this.kinematicEngine.update(
         landmarks,
-        timestamp,
+        now,
         primaryJointIndex
       );
     }
@@ -461,11 +455,6 @@ export class ExerciseEngine {
       hipDepth: angles.hipDepth,
       horizontalStretch: angles.horizontalStretch,
       downAngleReached,
-      // 🔥 Plank-specific spline deviation injected into feedback context
-      hipSplineDeviation,
-      plankSplineCalibrated: nextPlankSpline.isCalibrated,
-      hipSagging: hipSplineDeviation > PLANK_DEVIATION_THRESHOLD,
-      hipHyperextension: hipSplineDeviation < -PLANK_DEVIATION_THRESHOLD,
       wristSupinationScore,
     };
 
@@ -719,6 +708,9 @@ export class ExerciseEngine {
       lastDepthResult: nextLastDepthResult,
       depthStats: nextDepthStats,
       liveDepthFeedback,
+
+      jumpingJackSyncSamples: nextJumpingJackSyncSamples,
+      jumpingJackSync: nextJumpingJackSync,
 
       vbtMetrics: updatedVbtMetrics,
 
