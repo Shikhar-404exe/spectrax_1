@@ -5,7 +5,7 @@ import { useCameraPose } from '../hooks/useCameraPose';
 import { overlayRenderer } from '../services/overlayRenderer';
 import { getJointAngles, getJointVisibility } from '../services/angleUtils';
 import { getPostureErrorCategories } from '../engine/feedbackEngine';
-import { exerciseEngine, EngineState, createPlankCalibration } from '../services/exerciseEngine';
+import { exerciseEngine, EngineState } from '../services/exerciseEngine';
 import { ExerciseConfig } from '../config/exercises';
 import { sessionRecorder } from '../services/sessionRecorder';
 import { skeletalSense } from '../services/skeletalSense'; // Kept on main thread for reliable auto-detect
@@ -16,7 +16,7 @@ import { initialSquatDepthStats } from '../services/Squat_depth_classifier';
 import { useWorkoutSync } from '../hooks/useWorkoutSync';
 import { useDisplayConfig } from '../hooks/useDisplayConfig';
 import { FocusPanel, TimerPanel, RepsPanel, EnginePanel, SensePanel } from './WorkoutPanels';
-import { ghostService } from '../services/ghostService';
+import { ghostService, GhostStats } from '../services/ghostService';
 import type { FrameData } from '../services/sessionRecorder';
 import { FpsMonitor } from './FpsMonitor';
 import { gestureService, GestureCommand } from '../services/gestureService';
@@ -222,6 +222,15 @@ export const WorkoutScreen: React.FC<WorkoutScreenProps> = ({ exercise, onEnd, o
   const [mismatchError, setMismatchError] = useState<string | null>(null);
   const animationFrameRef = useRef<number | null>(null);
 
+  const [gestureConfidences, setGestureConfidences] = useState<Record<string, number>>({});
+  const [lastGestureCommand, setLastGestureCommand] = useState<GestureCommand | null>(null);
+  const [gestureHudVisible, setGestureHudVisible] = useState(false);
+  const gestureHudTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const workoutControlRef = useRef<'idle' | 'running' | 'paused'>('idle');
+  const [workoutControlState, setWorkoutControlState] = useState<'idle' | 'running' | 'paused'>('idle');
+  const ghostFramesRef = useRef<FrameData[]>([]);
+  const ghostStatsRef = useRef<GhostStats | null>(null);
+  const [hasGhost, setHasGhost] = useState(false);
 
   const clampPanelPositions = useCallback((positions: PanelPositions) => {
     const { width, height } = getViewportSize();
@@ -644,7 +653,7 @@ export const WorkoutScreen: React.FC<WorkoutScreenProps> = ({ exercise, onEnd, o
           console.warn("WS close failed:", err);
         }
       }
-      clearInterval(timer);
+      clearInterval(timerRef);
       gestureService.reset();
       if (gestureHudTimerRef.current) clearTimeout(gestureHudTimerRef.current);
     };
