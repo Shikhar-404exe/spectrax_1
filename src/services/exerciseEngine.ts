@@ -200,6 +200,25 @@ export interface EngineState {
   holdTime?: number;
 
   wristSupinationScore?: number;
+
+  /** Real-time depth coaching string emitted during the DOWN phase. */
+  liveDepthFeedback: string;
+
+  // VBT Metrics
+  vbtMetrics?: VBTMetrics;
+
+  // Pushup depth classification
+  lastPushupDepthResult?: PushupDepthResult | null;
+  pushupDepthStats?: PushupDepthStats;
+  livePushupDepthFeedback?: string;
+  downZReached?: number;
+
+  // Tracking & recovery buffers
+  visibilityBuffer?: number[];
+  trackingLostFrames?: number;
+  lastValidAngles?: Record<string, number>;
+  jumpingJackSyncSamples?: JumpingJackSyncSample[];
+  jumpingJackSync?: JumpingJackSyncMetrics;
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -213,30 +232,6 @@ interface RepParams {
   minDownDuration: number;
   correctRepMinScore: number;
   streakMinScore: number;
-}
-
-  /**
-   * Real-time depth coaching string emitted during the DOWN phase.
-   * Empty string when no depth cue is active.
-   */
-  liveDepthFeedback: string;
-
-  // VBT Metrics
-  vbtMetrics?: VBTMetrics;
-
-  // ── Pushup depth classification (NEW) ──────────────────────────
-  lastPushupDepthResult?: PushupDepthResult | null;
-  pushupDepthStats?: PushupDepthStats;
-  livePushupDepthFeedback?: string;
-  downZReached?: number;
-
-  // Tracking & recovery buffers
-  visibilityBuffer?: number[];
-  trackingLostFrames?: number;
-  lastValidAngles?: Record<string, number>;
-  holdTime?: number;
-  jumpingJackSyncSamples?: JumpingJackSyncSample[];
-  jumpingJackSync?: JumpingJackSyncMetrics;
 }
 
 // ─────────────────────────────────────────────

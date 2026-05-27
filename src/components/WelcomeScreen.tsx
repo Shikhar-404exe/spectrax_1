@@ -151,7 +151,7 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
         <div className="welcome-scroll-inner">
           
           {/* ── Hero Section (Maintainer's updated structure) ── */}
-          <div
+          <button
             className="welcome-hero animate-in"
             style={{
               transform: `perspective(1000px) rotateX(${tilt.x}deg) rotateY(${tilt.y}deg)`,
@@ -163,7 +163,6 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
               AI-Powered Fitness
             </div>
           </button>
-        </div>
 
             <h1 className="welcome-wordmark">SPECTRAX</h1>
 
@@ -248,7 +247,6 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
                 </div>
 
               </div>
-            </div>
 
           {/* ── Stat strip (From maintainer's branch) ── */}
           <div className="welcome-stats">
