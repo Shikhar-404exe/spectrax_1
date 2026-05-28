@@ -32,7 +32,7 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
   onViewProfile,
   leveling,
 }) => {
-  const { theme } = useTheme();
+  const theme = "dark";
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [tilt, setTilt] = useState({ x: 0, y: 0 });
   const [isMobile, setIsMobile] = useState(window.innerWidth < 640);
@@ -126,7 +126,7 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
   return (
     <div
       className="welcome-container"
-      data-theme={theme === "light" ? "light" : "dark"}
+      data-theme="dark"
       onMouseMove={handleMouseMove}
       onMouseLeave={handleMouseLeave}
     >
