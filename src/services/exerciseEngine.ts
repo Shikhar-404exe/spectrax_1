@@ -1,5 +1,3 @@
-import { getSupinationScore } from "./wristRotationDetector";
-
 /**
  * exerciseEngine.ts  (updated — squat depth classification integrated)
  *
@@ -206,28 +204,6 @@ export interface EngineState {
   jumpingJackSync?: JumpingJackSyncMetrics;
 
   wristSupinationScore?: number;
-
-  /**
-   * Real-time depth coaching string emitted during the DOWN phase.
-   * Empty string when no depth cue is active.
-   */
-  liveDepthFeedback: string;
-
-  // VBT Metrics
-  vbtMetrics?: VBTMetrics;
-
-  // ── Pushup depth classification (NEW) ──────────────────────────
-  lastPushupDepthResult?: PushupDepthResult | null;
-  pushupDepthStats?: PushupDepthStats;
-  livePushupDepthFeedback?: string;
-  downZReached?: number;
-
-  // Tracking & recovery buffers
-  visibilityBuffer?: number[];
-  trackingLostFrames?: number;
-  lastValidAngles?: Record<string, number>;
-  jumpingJackSyncSamples?: JumpingJackSyncSample[];
-  jumpingJackSync?: JumpingJackSyncMetrics;
 
   // ── Bilateral (left/right) tracking for bicep curls ─────────────────────
   leftHistory?: number[];
