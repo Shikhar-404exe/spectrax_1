@@ -3,6 +3,7 @@ import { Play, Sparkles, History, Trophy, User, Camera, Activity, BarChart3, Git
 import { getSavedUserWeight, saveUserWeight } from "../utils/calorieEstimator";
 import "../styles/WelcomeScreen.css";
 import { usePrefersReducedMotion } from "../hooks/usePrefersReducedMotion";
+import { useTheme } from "../context/ThemeContext";
 import { debounce } from "../utils/debounce";
 
 const STATS = [
@@ -29,10 +30,9 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
   onStart,
   onViewHistory,
   onViewTrophies,
-  onViewProfile,
   leveling,
 }) => {
-  const theme = "dark";
+  const { theme } = useTheme();
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [tilt, setTilt] = useState({ x: 0, y: 0 });
   const [isMobile, setIsMobile] = useState(window.innerWidth < 640);
@@ -126,7 +126,8 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
   return (
     <div
       className="welcome-container"
-      data-theme="dark"
+      data-theme={theme}
+  data-theme-style={theme}
       onMouseMove={handleMouseMove}
       onMouseLeave={handleMouseLeave}
     >
@@ -224,6 +225,7 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
                   <input
                     type="number" min="30" max="200" placeholder="70"
                     value={userWeight}
+                    aria-label="User weight in kilograms"
                     onChange={(e) => {
                       setUserWeight(e.target.value);
                       const val = parseFloat(e.target.value);
@@ -357,7 +359,7 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
 
         </div>
       </div>
-    </div>
+      </div>
   );
 };
 

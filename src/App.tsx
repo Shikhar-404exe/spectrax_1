@@ -114,6 +114,7 @@ function App() {
     exercises.squat,
   );
   const [bodyType, setBodyType] = useState<BodyType>("scanning");
+  const [adaptiveFactor, setAdaptiveFactor] = useState<number>(1.0);
   const [showExitModal, setShowExitModal] = useState(false);
   const [stats, setStats] = useState<WorkoutStats>({
     reps: 0,
@@ -140,7 +141,7 @@ function App() {
     needRefresh: [needRefresh, setNeedRefresh],
     updateServiceWorker,
   } = useRegisterSW({
-    onRegistered(r) {
+    onRegistered() {
     },
     onRegisterError(error) {
       console.error("SW registration error", error);
@@ -352,7 +353,7 @@ function App() {
             onSelectExercise={handleSelectExercise}
             onNext={() => navigateTo("workout")}
             onBack={() => setShowExitModal(true)}
-            onBodyTypeDetected={setBodyType}
+            onBodyTypeDetected={(type, factor) => { setBodyType(type); setAdaptiveFactor(factor); }}
           />
         )}
 
@@ -362,6 +363,7 @@ function App() {
             onEnd={handleWorkoutEnd}
             onAutoDetect={handleAutoDetect}
             bodyType={bodyType}
+            adaptiveFactor={adaptiveFactor}
           />
         )}
 
