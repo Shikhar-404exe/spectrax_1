@@ -1508,16 +1508,9 @@ export const Replay3DModel: React.FC<Replay3DModelProps> = ({
       composer.addPass(bloomPass);
       bloomPassRef.current = bloomPass;
 
-      const controls = new OrbitControls(
-        cameraRef.current,
-        renderer.domElement,
-      );
-      controls.enableDamping = true;
-      controls.dampingFactor = 0.05;
-      controls.maxPolarAngle = Math.PI / 2 + 0.1;
-      controls.minDistance   = 1.0;
-      controls.maxDistance   = 10.0;
-      controlsRef.current    = controls;
+
+      
+    
 
       const handleContextLost = (event: Event) => {
         event.preventDefault();
@@ -1570,8 +1563,11 @@ export const Replay3DModel: React.FC<Replay3DModelProps> = ({
         renderer.domElement.removeEventListener("webglcontextlost",     handleContextLost);
         renderer.domElement.removeEventListener("webglcontextrestored", handleContextRestored);
 
-        controls.dispose();
-        composer.dispose();
+        window.removeEventListener("resize", handleResize);
+        controlsRef.current?.dispose();
+
+   
+     
         composerRef.current  = null;
         bloomPassRef.current = null;
         smaaPassRef.current  = null;
@@ -1580,7 +1576,7 @@ export const Replay3DModel: React.FC<Replay3DModelProps> = ({
         renderer.dispose();
         renderer.forceContextLoss();
         if (rendererRef.current  === renderer) rendererRef.current  = null;
-        if (controlsRef.current  === controls) controlsRef.current  = null;
+        if (controlsRef.current  === controlsRef.current) controlsRef.current  = null;
       };
 
       requestAnimationFrame(() => {
