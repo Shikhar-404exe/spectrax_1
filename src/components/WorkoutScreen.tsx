@@ -50,6 +50,7 @@ interface WorkoutScreenProps {
   }) => void;
   onAutoDetect?: (key: string) => void;
   bodyType?: BodyType;
+  adaptiveFactor?: number;
 }
 
 type WorkoutPanelId = "focus" | "timer" | "reps" | "engine" | "sense";
@@ -156,9 +157,11 @@ const extrapolateLandmarks = (
   });
 };
 
-export const WorkoutScreen: React.FC<WorkoutScreenProps> = ({ exercise, onEnd, onAutoDetect, bodyType }) => {
+export const WorkoutScreen: React.FC<WorkoutScreenProps> = ({ exercise, onEnd, onAutoDetect, bodyType, adaptiveFactor = 1.0 }) => {
   const bodyTypeRef = useRef(bodyType);
   bodyTypeRef.current = bodyType;
+  const adaptiveFactorRef = useRef(adaptiveFactor);
+  adaptiveFactorRef.current = adaptiveFactor;
   const onAutoDetectRef = useRef(onAutoDetect);
   onAutoDetectRef.current = onAutoDetect;
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -269,6 +272,10 @@ export const WorkoutScreen: React.FC<WorkoutScreenProps> = ({ exercise, onEnd, o
   useEffect(() => {
     bodyTypeRef.current = bodyType;
   }, [bodyType]);
+
+  useEffect(() => {
+    adaptiveFactorRef.current = adaptiveFactor;
+  }, [adaptiveFactor]);
 
   useEffect(() => {
     onAutoDetectRef.current = onAutoDetect;
@@ -479,14 +486,12 @@ export const WorkoutScreen: React.FC<WorkoutScreenProps> = ({ exercise, onEnd, o
 
     const visibility = getJointVisibility(results.poseLandmarks);
 
-    // Adjust structural thresholds dynamically based on active detected body type
+    // Adjust structural thresholds dynamically based on body-type calibration factor
     const activeConfig = { ...exercise };
-    if (bodyTypeRef.current === "endo" && activeConfig.key === "squat") {
-      activeConfig.downThreshold += 5; // Softer extension limit due to compacted torso proportions
-    } else if (bodyTypeRef.current === "ecto" && activeConfig.key === "squat") {
-      activeConfig.downThreshold -= 5; // Stricter requirement for longer limbs to reach true parallel
-    } else if (bodyTypeRef.current === "endo" && activeConfig.key === "pushup") {
-      activeConfig.downThreshold -= 5; // Wider torsos reach absolute down plane sooner
+    const factor = adaptiveFactorRef.current;
+    if (factor !== 1.0) {
+      activeConfig.downThreshold = Math.round(activeConfig.downThreshold * factor);
+      activeConfig.upThreshold = Math.round(activeConfig.upThreshold * factor);
     }
 
     // 2. Process through multi-exercise engine (stays on main thread — manages state)
