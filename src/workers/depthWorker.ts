@@ -211,7 +211,8 @@ self.onmessage = async (event: MessageEvent) => {
     try {
       depthPipeline = await pipeline("depth-estimation", config.modelName, {
         dtype: "fp16",
-      });
+        quantized: false,
+      } as any);
       (self as any).postMessage({ type: "ready" });
     } catch (err: any) {
       (self as any).postMessage({
