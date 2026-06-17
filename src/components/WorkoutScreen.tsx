@@ -28,6 +28,7 @@ import { CameraErrorBoundary } from './CameraErrorBoundary';
 import { gestureService, GestureCommand } from '../services/gestureService';
 import { debounce } from '../utils/debounce';
 import { useSettings } from '../context/SettingsContext';
+import { injuryRiskEngine } from '../services/injuryRiskEngine';
 
 // ── Web Worker (Vite native worker bundling) ──────────────────────────────────
 const createPoseWorker = () =>
