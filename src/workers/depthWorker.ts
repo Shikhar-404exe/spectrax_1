@@ -128,11 +128,11 @@ async function runWebGPUPreprocess(
     });
   }
 
-  gpuDevice.queue.writeBuffer(gpuInputBuffer, 0, input);
+  gpuDevice.queue.writeBuffer(gpuInputBuffer, 0, input as BufferSource);
   gpuDevice.queue.writeBuffer(
     gpuUniformBuffer,
     0,
-    new Float32Array([width, height, minD, maxD])
+    new Float32Array([width, height, minD, maxD]) as BufferSource
   );
 
   const bindGroup = gpuDevice.createBindGroup({
